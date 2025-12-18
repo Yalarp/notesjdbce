@@ -1,178 +1,110 @@
 # File Handling Basics in Java
 
-File handling implies reading from and writing to files. Java provides the `java.io` package for all Input/Output operations.
+## Introduction
 
-## 1. The `File` Class
+**File Handling** in Java allows reading from and writing to files using streams.
 
-The `java.io.File` class does **not** read or write data. It is a representation of a file or directory path name. It is used to get metadata (properties) of a file.
+## Stream Concept
 
-#### Code Example: `FileDemo.java`
+**Stream** = Communication path between source and destination
+
+### Types:
+- **Input Stream** → For reading (from file, network, etc.)
+- **Output Stream** → For writing (to file, network, etc.)
+
+## Java Stream Categories
+
+### 1. Byte Streams
+- Handle raw binary data (images, videos, audio)
+- Read/write data **byte by byte**
+- Classes: `InputStream`, `OutputStream`
+
+### 2. Character Streams  
+- Handle text data with proper encoding (UTF-8, UTF-16)
+- Read/write data **character by character**
+- Classes: `Reader`, `Writer`
+
+## File Class
+
+**Purpose:** Get file/folder metadata (exists, length, last modified, etc.)
 
 ```java
 import java.io.File;
-import java.util.Date;
 
-public class FileDemo {
-    public static void main(String args[]) {
-        // Create File object (does not create actual file on disk yet)
-        File f = new File("c:\\temp\\FileDemo.java");
-        
-        System.out.println("File Name: " + f.getName());
-        System.out.println("Path: " + f.getPath());
-        System.out.println("Absolute Path: " + f.getAbsolutePath());
-        
-        System.out.println(f.exists() ? "Exists" : "Doesn't Exist");
-        System.out.println(f.isDirectory() ? "Is Directory" : "Is File");
-        
-        // Metadata
-        System.out.println("Last Modified: " + new Date(f.lastModified()));
-        System.out.println("Size (bytes): " + f.length());
-    }
-}
+File file = new File("test.txt");
+System.out.println("Exists: " + file.exists());
+System.out.println("Length: " + file.length());
+System.out.println("Can Read: " + file.canRead());
+System.out.println("Can Write: " + file.canWrite());
+System.out.println("Is Directory: " + file.isDirectory());
+System.out.println("Last Modified: " + file.lastModified());
 ```
+
+## FileInputStream and FileOutputStream
+
+**For byte-level operations**
+
+```java
+// Write bytes
+FileOutputStream fos = new FileOutputStream("data.txt");
+fos.write(65);  // Writes 'A'
+fos.close();
+
+// Read bytes
+FileInputStream fis = new FileInputStream("data.txt");
+int data = fis.read();  // Reads 65
+System.out.println((char) data);  // Prints 'A'
+fis.close();
+```
+
+## FileReader and FileWriter
+
+**For character-level operations**
+
+```java
+// Write characters
+FileWriter fw = new FileWriter("text.txt");
+fw.write("Hello World");
+fw.close();
+
+// Read characters
+FileReader fr = new FileReader("text.txt");
+int ch;
+while ((ch = fr.read()) != -1) {
+    System.out.print((char) ch);
+}
+fr.close();
+```
+
+## BufferedReader and BufferedWriter
+
+**For efficient reading/writing with buffering**
+
+```java
+// Buffered writing
+BufferedWriter bw = new BufferedWriter(new FileWriter("file.txt"));
+bw.write("Line 1");
+bw.newLine();
+bw.write("Line 2");
+bw.close();
+
+// Buffered reading
+BufferedReader br = new BufferedReader(new FileReader("file.txt"));
+String line;
+while ((line = br.readLine()) != null) {
+    System.out.println(line);
+}
+br.close();
+```
+
+## Key Points
+
+1. **Always close streams** (use try-with-resources)
+2. **Byte streams for binary**, character streams for text
+3. **BufferedReader/Writer** for better performance
+4. **File class** for metadata, not actual I/O
+5. Package: `java.io`
 
 ---
 
-## 2. Streams Concept
-
-A **Stream** is a sequence of data flowing from a source to a destination.
--   **InputStream**: For reading data (Source -> Program).
--   **OutputStream**: For writing data (Program -> Destination).
-
-### Byte vs Character Streams
-
-1.  **Byte Streams**: Handle raw binary data (images, video, etc.) byte by byte (8-bit).
-    -   Base Classes: `InputStream`, `OutputStream`.
-    -   Impl Classes: `FileInputStream`, `FileOutputStream`.
-2.  **Character Streams**: Handle text data, managing encoding (UTF-8, etc.) automatically.
-    -   Base Classes: `Reader`, `Writer`.
-    -   Impl Classes: `FileReader`, `FileWriter`.
-
----
-
-## 3. Byte Stream Examples
-
-#### Reading a File (`FileInputStream`)
-
-```java
-import java.io.*;
-
-public class First {
-    public static void main(String args[]) {
-        File f = new File("d:\\FileDemo.java");
-        if(!f.exists()) {
-            System.out.println("File does not exist");
-            return;
-        }
-        
-        // Try-with-resources: Automatically closes stream
-        try(FileInputStream fis = new FileInputStream(f)) {
-            byte b[] = new byte[(int)f.length()];
-            
-            // Read bytes into array
-            fis.read(b);
-            
-            // Convert bytes to String
-            String content = new String(b);
-            System.out.println(content);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-}
-```
-
-#### Writing to a File (`FileOutputStream`)
-
-```java
-import java.io.*;
-
-public class Second {
-    public static void main(String args[]) {
-        // Second argument 'true' enables APPEND mode (don't overwrite)
-        try(FileOutputStream fos = new FileOutputStream("d:\\abc1.txt", true)) {
-            System.out.println("Enter data:");
-            byte b[] = new byte[100];
-            
-            // Read from Keyboard (System.in)
-            int k = System.in.read(b);
-            
-            // Write to file
-            fos.write(b, 0, k); // Write 'k' bytes from index 0
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-}
-```
-
----
-
-## 4. Character Stream Examples
-
-#### Copying Text (`FileReader` / `FileWriter`)
-
-```java
-import java.io.*;
-
-public class Third {
-    public static void main(String args[]) {
-        // Writing Chars
-        try(FileWriter fw = new FileWriter("e:\\abc2.txt")) {
-            char arr[] = {'a','b','c','d','e'};
-            fw.write(arr);
-        } catch(IOException ie) {
-            ie.printStackTrace();
-        }
-        
-        // Reading Chars
-        try(FileReader fr = new FileReader("e:\\abc2.txt")) {
-            char arr1[] = new char[(int)new File("e:\\abc2.txt").length()];
-            fr.read(arr1);
-            
-            // Display
-            for(char c : arr1) {
-                System.out.println(c);
-            }
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-}
-```
-
----
-
-## 5. RandomAccessFile
-
-Allows reading and writing to a random offset (position) in a file, unlike streams which are sequential.
-
-#### Code Example: `Sixth.java`
-
-```java
-import java.io.*;
-
-public class Sixth {
-    public static void main(String args[]) {
-        // Mode "rw" = Read/Write
-        try(RandomAccessFile rf = new RandomAccessFile("e:\\temp\\xy.txt", "rw")) {
-            
-            // Go to end of file to Append
-            rf.seek(rf.length());
-            
-            byte b[] = new byte[200];
-            System.out.println("Enter data:");
-            int k = System.in.read(b);
-            rf.write(b, 0, k);
-            
-            // Go to beginning to Read
-            rf.seek(0);
-            byte c[] = new byte[(int)rf.length()];
-            rf.read(c);
-            System.out.println("File Content: " + new String(c));
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-}
-```
+**End of File Handling Basics**
